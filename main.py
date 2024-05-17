@@ -95,6 +95,18 @@ def T(x, y):
         fall(x)
     pieces[turn - 1]['T'] -= 1
 
+def put(p_name: str, x, y):
+    """
+    Put a chess
+    """
+    map = {
+        "C": C,
+        "Y": Y,
+        "T": T
+    }
+    func = map[p_name.upper()]
+    func(x, y)
+
 turn = 1
 rd = 1 # 1黄 2蓝
 while True:
@@ -105,16 +117,12 @@ while True:
         f'第{rd}轮。轮到{"黄" if turn == 1 else "蓝"}方了。'
     )
 
-    p = input('请输入要下的子：').upper()
+    p_name = input('请输入要下的子：').upper()
     x, y = map(int, input('请输入要下的位置，用空格分开：').split())
     x -= 1
     y -= 1
 
-    {
-        "C": C,
-        "Y": Y,
-        "T": T
-    }[p](x, y)
+    put(p_name)  
     
     if turn == 1:
         turn = 2
