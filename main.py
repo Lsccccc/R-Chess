@@ -11,18 +11,19 @@ def color_print(color, *values, **kwargs):
 board = [['O' for j in range(6)] for i in range(6)]
 # 将列表逆时针旋转90°即为棋盘
 
-belong = [[0 for j in range(6)] for i in range(6)]
+belong = [[None for j in range(6)] for i in range(6)] # None/T/F
 
-ht = [0, 0, 0, 0, 0, 0]
-pieces = [
-    {
+ht = [0] * 6
+pieces = {
+    True: {
         'Y': 6,
         'T': 3
-    }, {
+    }, 
+    False: {
         'Y': 6,
         'T': 3
     }
-]
+}
 
 def print_board():
     for i in range(5, -1, -1):
@@ -77,7 +78,7 @@ def Y(x, y):
         board[x][y] = 'Y'
         belong[x][y] = turn
         fall(x)
-    pieces[turn - 1]['Y'] -= 1
+    pieces[turn]['Y'] -= 1
 
 def T(x, y):
     global board, turn
@@ -93,7 +94,7 @@ def T(x, y):
         board[x][y] = 'T'
         belong[x][y] = turn
         fall(x)
-    pieces[turn - 1]['T'] -= 1
+    pieces[turn]['T'] -= 1
 
 def put(p_name: str, x, y):
     """
@@ -107,13 +108,13 @@ def put(p_name: str, x, y):
     func = map[p_name.upper()]
     func(x, y)
 
-turn = 1
+turn = True  # T=黄 F=蓝
 rd = 1 # 1黄 2蓝
 while True:
     print_board()
     print_pieces()
     print(
-        'y' if turn == 1 else 'b',
+        'y' if turn else 'b',
         f'第{rd}轮。轮到{"黄" if turn == 1 else "蓝"}方了。'
     )
 
@@ -124,10 +125,7 @@ while True:
 
     put(p_name)  
     
-    if turn == 1:
-        turn = 2
-    else:
-        turn = 1
+    turn = not turn
     rd += 1
     
     
