@@ -1,3 +1,6 @@
+YELLOW = True
+BLUE = False
+
 board = [['O' for j in range(6)] for i in range(6)]
 # 列表第一维是列（从左往右），第二维是行（从下往上）
 # 将列表逆时针旋转90°即为棋盘
@@ -8,11 +11,11 @@ ht = [0] * 6 # height 每一列的高度
 
 # 拥有棋子数
 pieces = {
-    True: {
+    YELLOW: {
         'Y': 6,
         'T': 3
     }, 
-    False: {
+    BLUE: {
         'Y': 6,
         'T': 3
     }
@@ -34,20 +37,20 @@ def print_board():
         for j in range(6):
             if belong[j][i] == None:
                 color_print('w', board[j][i], end=' ')
-            if belong[j][i] == True:
+            if belong[j][i] == YELLOW:
                 color_print('y', board[j][i], end=' ')
-            elif belong[j][i] == False:
+            elif belong[j][i] == BLUE:
                 color_print('b', board[j][i], end=' ')
         print()
 
 def print_pieces():
     color_print('y', '黄方：')
-    for i in pieces[1]:
-        color_print('y', f'{i}: {pieces[1][i]}')
+    for i in pieces[YELLOW]:
+        color_print('y', f'{i}: {pieces[YELLOW][i]}')
 
     color_print('b', '蓝方：')
-    for i in pieces[0]:
-        color_print('b', f'{i}: {pieces[0][i]}')
+    for i in pieces[BLUE]:
+        color_print('b', f'{i}: {pieces[BLUE][i]}')
 
 # error
 def err():
@@ -135,7 +138,7 @@ def T(x, y):
         fall(x)
     pieces[turn]['T'] -= 1
 
-turn = True  # T=黄 F=蓝
+turn = YELLOW  # True=黄 False=蓝
 rd = 1 # round
 while True:
     print_board()
