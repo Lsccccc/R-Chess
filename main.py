@@ -23,12 +23,13 @@ pieces = {
 
 # printing
 def color_print(color, *values, **kwargs):
-    if color == 'y':
-        print('\033[33m', end='')
-    elif color == 'b':
-        print('\033[34m', end='')
-    elif color == 'w':
-        print('\033[0m', end='')
+    color_codes = {
+        'r': '31',
+        'y': '33',
+        'b': '34',
+        'w': '0'
+    }
+    print(f'\033[{color_codes[color]}m', end='')
     print(*values, **kwargs)
     print('\033[0m', end='')
 
@@ -53,8 +54,15 @@ def print_pieces():
         color_print('b', f'{i}: {pieces[BLUE][i]}')
 
 # error
-def err():
-    print('错误操作。请重试。')
+class GameError(Exception):
+    def __init__(self, msg='错误操作。请重试。'):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+def err(msg='错误操作。请重试。'):
+    raise GameError(msg)
 
 # game functions
 def put(p_name: str, x, y):
@@ -89,10 +97,20 @@ def C(x, y):
     技能：无
     """
     global board, turn
-    ht[x] += 1
-    board[x][y] = 'C'
-    belong[x][y] = turn
-    fall(x)
+    eat_list = []
+    
+    if y < ht[x]:
+        if board[x][y] in eat_list:
+            board[x][y] = 'C'
+            belong[x][y] = turn
+        else:
+            err()
+            return
+    else:
+        ht[x] += 1
+        board[x][y] = 'C'
+        belong[x][y] = turn
+        fall(x)
 
 def Y(x, y):
     """
@@ -102,8 +120,14 @@ def Y(x, y):
     技能：无
     """
     global board, turn
+    eat_list = ['C']
+
+    if pieces[turn]['Y'] == 0:
+        err()
+        return
+    
     if y < ht[x]:
-        if board[x][y] == 'C':
+        if board[x][y] in eat_list:
             board[x][y] = 'Y'
             belong[x][y] = turn
         else:
@@ -124,8 +148,14 @@ def T(x, y):
     技能：无
     """
     global board, turn
+    eat_list = ['C', 'Y']
+
+    if pieces[turn]['T'] == 0:
+        err()
+        return
+
     if y < ht[x]:
-        if board[x][y] == 'C' or board[x][y] == 'Y':
+        if board[x][y] in eat_list:
             board[x][y] = 'T'
             belong[x][y] = turn
         else:
@@ -148,12 +178,21 @@ while True:
         f'第{rd}轮。轮到{"黄" if turn else "蓝"}方了。'
     )
 
-    p_name = input('请输入要下的子：').upper()
-    x, y = map(int, input('请输入要下的位置，用空格分开：').split())
-    x -= 1
-    y -= 1
-
-    put(p_name, x, y)  
+    while True:
+        try:
+            p_name = input('请输入要下的子：').upper()
+            x, y = map(int, input('请输入要下的位置，用空格分开：').split())
+            x -= 1
+            y -= 1
+            put(p_name, x, y)
+        except KeyError:
+            color_print('r', '输入错误。请重试。')
+        except ValueError:
+            color_print('r', '输入错误。请重试。')
+        except GameError as e:
+            color_print('r', e)
+        else:
+            break
     
     turn = not turn
     rd += 1
