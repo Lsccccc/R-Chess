@@ -65,17 +65,21 @@ def err(msg='错误操作。请重试。'):
     raise GameError(msg)
 
 # game functions
-def put(p_name: str, x, y):
+def put(p_name: str, x):
     """
     放置棋子
     """
+    if ht[x] >= 6:
+        err('本列已满。')
+        return
+    
     map = {
         "C": C,
         "Y": Y,
         "T": T
     }
     func = map[p_name.upper()]
-    func(x, y)
+    func(x)
 
 def fall(x):
     """
@@ -88,84 +92,61 @@ def fall(x):
     for i in range(n):
         board[x].append('O')
         belong[x].append(None)
+    ht[x] = 6 - n
 
-def C(x, y):
+def eat_down(p_name, x, eat_list):
+    """
+    往下吃一个棋子，C、Y、T技能
+    """
+    global board, turn
+    if ht[x] == 0:
+        board[x][0] = p_name
+        belong[x][0] = turn
+        ht[x] += 1
+    else:
+        board[x][ht[x]] = p_name
+        belong[x][ht[x]] = turn
+        if board[x][ht[x] - 1] in eat_list:
+            board[x][ht[x] - 1] = 'O'
+            belong[x][ht[x] - 1] = None
+        fall(x)
+
+def C(x):
     """
     Chenxi
     棋子数量：无限个
     可吃：有，之后更新
     技能：无
     """
-    global board, turn
-    eat_list = []
-    
-    if y < ht[x]:
-        if board[x][y] in eat_list:
-            board[x][y] = 'C'
-            belong[x][y] = turn
-        else:
-            err()
-            return
-    else:
-        ht[x] += 1
-        board[x][y] = 'C'
-        belong[x][y] = turn
-        fall(x)
+    eat_down('C', x, [])
 
-def Y(x, y):
+def Y(x):
     """
     Yang
     棋子数量：6个
     可吃：C
     技能：无
     """
-    global board, turn
-    eat_list = ['C']
-
     if pieces[turn]['Y'] == 0:
-        err()
+        err('棋子耗尽。')
         return
     
-    if y < ht[x]:
-        if board[x][y] in eat_list:
-            board[x][y] = 'Y'
-            belong[x][y] = turn
-        else:
-            err()
-            return
-    else:
-        ht[x] += 1
-        board[x][y] = 'Y'
-        belong[x][y] = turn
-        fall(x)
+    eat_down('Y', x, ['C'])
+    
     pieces[turn]['Y'] -= 1
 
-def T(x, y):
+def T(x):
     """
     Tang
     棋子数量：3个
     可吃：C, Y
     技能：无
     """
-    global board, turn
-    eat_list = ['C', 'Y']
 
     if pieces[turn]['T'] == 0:
-        err()
+        err('棋子耗尽。')
         return
-
-    if y < ht[x]:
-        if board[x][y] in eat_list:
-            board[x][y] = 'T'
-            belong[x][y] = turn
-        else:
-            err()
-            return
-    else:
-        ht[x] += 1
-        board[x][y] = 'T'
-        belong[x][y] = turn
-        fall(x)
+    eat_down('T', x, ['C', 'Y'])
     pieces[turn]['T'] -= 1
 
 turn = YELLOW  # True=黄 False=蓝
@@ -180,11 +161,9 @@ while True:
 
     while True:
         try:
+            x = int(input('请输入要下的列：')) - 1
             p_name = input('请输入要下的子：').upper()
-            x, y = map(int, input('请输入要下的位置，用空格分开：').split())
-            x -= 1
-            y -= 1
-            put(p_name, x, y)
+            put(p_name, x)
         except KeyError:
             color_print('r', '输入错误。请重试。')
         except ValueError:
