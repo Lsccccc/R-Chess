@@ -1,0 +1,13 @@
+condition:
+  - t: AND
+    subs:
+      - t: OR
+        subs:
+          - t: EXP
+            val: 1 == 1
+          - t: EXP
+            val: 1 == 2
+      - t: AND
+        subs: 
+          - t: EXP
+            val: 1+1 == 2
