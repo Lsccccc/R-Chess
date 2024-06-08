@@ -12,10 +12,12 @@ ht = [0] * 6 # height 每一列的高度
 # 拥有棋子数
 pieces = {
     YELLOW: {
+        'C': '无限',
         'Y': 6,
         'T': 3
     }, 
     BLUE: {
+        'C': '无限',
         'Y': 6,
         'T': 3
     }
@@ -94,6 +96,33 @@ def fall(x):
         belong[x].append(None)
     ht[x] = 6 - n
 
+def judge():
+    """判定胜者""" 
+    # 横四个
+    for x in range(3):
+        for y in range(6):
+            if belong[x][y] == belong[x+1][y] == belong[x+2][y] == belong[x+3][y] != None:
+                return belong[x][y]
+
+    # 纵四个
+    for x in range(6):
+        for y in range(3):
+            if belong[x][y] == belong[x][y+1] == belong[x][y+2] == belong[x][y+3] != None:
+                return belong[x][y]
+
+    # "/"斜四个
+    for x in range(3):
+        for y in range(3):
+            if belong[x][y] == belong[x+1][y+1] == belong[x+2][y+2] == belong[x+3][y+3] != None:
+                return belong[x][y]
+    
+    # "\"斜四个
+    for x in range(3):
+        for y in range(3, 6):
+            if belong[x][y] == belong[x+1][y-1] == belong[x+2][y-2] == belong[x+3][y-3] != None:
+                return belong[x][y]
+            
+
 def eat_down(p_name, x, eat_list):
     """
     往下吃一个棋子，C、Y、T技能
@@ -151,8 +180,17 @@ def T(x):
 
 turn = YELLOW  # True=黄 False=蓝
 rd = 1 # round
+winner = None
 while True:
     print_board()
+    winner = judge()
+    if winner != None:
+        color_print(
+            'y' if winner else 'b',
+            f'''#############\n# {"黄" if winner else "蓝"}方赢了！#\n#############
+            '''
+        )
+        break
     print_pieces()
     color_print(
         'y' if turn else 'b',
