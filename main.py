@@ -14,12 +14,14 @@ pieces = {
     YELLOW: {
         'C': '无限',
         'Y': 6,
-        'T': 3
+        'T': 3,
+        'B': 1
     }, 
     BLUE: {
         'C': '无限',
         'Y': 6,
-        'T': 3
+        'T': 3,
+        'B': 1
     }
 }
 
@@ -39,11 +41,11 @@ def print_board():
     for i in range(5, -1, -1):
         for j in range(6):
             if belong[j][i] == None:
-                color_print('w', board[j][i], end=' ')
+                color_print('w', board[j][i], end=' ' * (3 - len(board[j][i])))
             if belong[j][i] == YELLOW:
-                color_print('y', board[j][i], end=' ')
+                color_print('y', board[j][i], end=' ' * (3 - len(board[j][i])))
             elif belong[j][i] == BLUE:
-                color_print('b', board[j][i], end=' ')
+                color_print('b', board[j][i], end=' ' * (3 - len(board[j][i])))
         print()
 
 def print_pieces():
@@ -68,9 +70,7 @@ def err(msg='错误操作。请重试。'):
 
 # game functions
 def put(p_name: str, x):
-    """
-    放置棋子
-    """
+    """放置棋子"""
     if ht[x] >= 6:
         err('本列已满。')
         return
@@ -78,7 +78,8 @@ def put(p_name: str, x):
     map = {
         "C": C,
         "Y": Y,
-        "T": T
+        "T": T,
+        "B": B
     }
     func = map[p_name.upper()]
     func(x)
@@ -121,7 +122,10 @@ def judge():
         for y in range(3, 6):
             if belong[x][y] == belong[x+1][y-1] == belong[x+2][y-2] == belong[x+3][y-3] != None:
                 return belong[x][y]
-            
+
+def eat(x, y):
+    board[x][y] = 'O'
+    belong[x][y] = None
 
 def eat_down(p_name, x, eat_list):
     """
@@ -135,9 +139,8 @@ def eat_down(p_name, x, eat_list):
     else:
         board[x][ht[x]] = p_name
         belong[x][ht[x]] = turn
-        if board[x][ht[x] - 1] in eat_list:
-            board[x][ht[x] - 1] = 'O'
-            belong[x][ht[x] - 1] = None
+        if board[x][ht[x] - 1] in eat_list and belong[x][ht[x] - 1] != turn:
+            eat(x, ht[x] - 1)
         fall(x)
 
 def C(x):
@@ -178,6 +181,38 @@ def T(x):
     eat_down('T', x, ['C', 'Y'])
     pieces[turn]['T'] -= 1
 
+def B(x):
+    """
+    Behaviour
+    棋子数量：1个
+    可吃：C, Y, T
+    技能：分别向左、右吃子，直到碰到不能吃的
+    """
+    global board, turn
+    eat_list = ['C', 'Y', 'T']
+    if pieces[turn]['B'] == 0:
+        err('棋子耗尽。')
+        return
+    
+    h = ht[x]
+    board[x][h] = 'B'
+    belong[x][h] = turn
+
+    eat_x = x - 1
+    while eat_x >= 0 and board[eat_x][h] in eat_list and belong[eat_x][h] != turn:
+        eat(eat_x, h)
+        eat_x -= 1
+    
+    eat_x = x + 1
+    while eat_x < 6 and board[eat_x][h] in eat_list and belong[eat_x][h] != turn:
+        eat(eat_x, h)
+        eat_x += 1
+    
+    for i in range(6):
+        fall(i)
+    
+    pieces[turn]['B'] -= 1
+    
 turn = YELLOW  # True=黄 False=蓝
 rd = 1 # round
 winner = None
