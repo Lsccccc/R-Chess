@@ -12,16 +12,24 @@ ht = [0] * 6 # height 每一列的高度
 # 拥有棋子数
 pieces = {
     YELLOW: {
-        'C': '无限',
+        'C': '∞',
         'Y': 6,
         'T': 3,
-        'B': 1
+        'A': 2,
+        'H': 2,
+        'R': 1,
+        'B': 1,
+        'X': 1
     }, 
     BLUE: {
-        'C': '无限',
+        'C': '∞',
         'Y': 6,
         'T': 3,
-        'B': 1
+        'A': 2,
+        'H': 2,
+        'R': 1,
+        'B': 1,
+        'X': 1
     }
 }
 
@@ -38,7 +46,9 @@ def color_print(color, *values, **kwargs):
     print('\033[0m', end='')
 
 def print_board():
+    print('----------------------')
     for i in range(5, -1, -1):
+        print('|', end='  ')
         for j in range(6):
             if belong[j][i] == None:
                 color_print('w', board[j][i], end=' ' * (3 - len(board[j][i])))
@@ -46,16 +56,18 @@ def print_board():
                 color_print('y', board[j][i], end=' ' * (3 - len(board[j][i])))
             elif belong[j][i] == BLUE:
                 color_print('b', board[j][i], end=' ' * (3 - len(board[j][i])))
-        print()
+        print('|')
+    print('----------------------')
 
 def print_pieces():
-    color_print('y', '黄方：')
+    color_print('y', '黄方：', end='')
     for i in pieces[YELLOW]:
-        color_print('y', f'{i}: {pieces[YELLOW][i]}')
+        color_print('y', f'{pieces[YELLOW][i]}{i}', end=' ')
 
-    color_print('b', '蓝方：')
+    color_print('b', '\n蓝方：', end='')
     for i in pieces[BLUE]:
-        color_print('b', f'{i}: {pieces[BLUE][i]}')
+        color_print('b', f'{pieces[BLUE][i]}{i}', end=' ')
+    print()
 
 # error
 class GameError(Exception):
@@ -79,7 +91,11 @@ def put(p_name: str, x):
         "C": C,
         "Y": Y,
         "T": T,
-        "B": B
+        "A": A,
+        "H": H,
+        "R": R,
+        "B": B,
+        "X": X
     }
     func = map[p_name.upper()]
     func(x)
@@ -129,7 +145,7 @@ def eat(x, y):
 
 def eat_down(p_name, x, eat_list):
     """
-    往下吃一个棋子，C、Y、T技能
+    往下吃一个棋子，C、Y、T、A技能
     """
     global board, turn
     if ht[x] == 0:
@@ -147,23 +163,23 @@ def C(x):
     """
     Chenxi
     棋子数量：无限个
-    可吃：有，之后更新
-    技能：无
+    可吃：H, B, X, Z
+    技能：向下吃一个能吃的子，仅吃对方
     """
-    eat_down('C', x, [])
+    eat_down('C', x, 'H B X Z'.split())
 
 def Y(x):
     """
     Yang
     棋子数量：6个
-    可吃：C
-    技能：无
+    可吃：C, H(+), B(+), X(+), Z(+)
+    技能：向下吃一个能吃的子，仅吃对方
     """
     if pieces[turn]['Y'] == 0:
         err('棋子耗尽。')
         return
     
-    eat_down('Y', x, ['C'])
+    eat_down('Y', x, 'C H H+ B B+ X X+ Z Z+'.split())
     
     pieces[turn]['Y'] -= 1
 
@@ -171,25 +187,94 @@ def T(x):
     """
     Tang
     棋子数量：3个
-    可吃：C, Y
-    技能：无
+    可吃：C(+), Y
+    技能：向下吃一个能吃的子，仅吃对方
     """
 
     if pieces[turn]['T'] == 0:
         err('棋子耗尽。')
         return
-    eat_down('T', x, ['C', 'Y'])
+    eat_down('T', x, 'C C+ Y'.split())
     pieces[turn]['T'] -= 1
+
+def A(x):
+    """
+    Tang
+    棋子数量：2个
+    可吃：R
+    技能：向下吃一个子，仅吃R
+    """
+
+    if pieces[turn]['A'] == 0:
+        err('棋子耗尽。')
+        return
+    eat_down('A', x, ['R'])
+    pieces[turn]['A'] -= 1
+
+def H(x):
+    """
+    Hao
+    棋子数量：2个
+    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+)
+    技能：炸掉周围八个棋子中能吃的，无视敌我
+    """
+    global board, turn
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+'.split()
+    if pieces[turn]['H'] == 0:
+        err('棋子耗尽。')
+        return
+    
+    h = ht[x]
+    board[x][h] = 'H'
+    belong[x][h] = turn
+
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if i == 0 and j == 0:
+                continue
+            if 0 <= x + i < 6 and 0 <= h + j < 6 and board[x + i][h + j] in eat_list:
+                eat(x + i, h + j)
+    
+    for i in range(max(0, x - 1), min(5, x + 1)):
+        fall(i)
+    
+    pieces[turn]['H'] -= 1
+
+def R(x):
+    """
+    Rui
+    棋子数量：1个
+    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
+    技能：向下连续吃子，直到碰到不能吃的，无视敌我
+    """
+    global board, turn
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
+    if pieces[turn]['R'] == 0:
+        err('棋子耗尽。')
+        return
+    
+    h = ht[x]
+    board[x][h] = 'R'
+    belong[x][h] = turn
+
+    eat_h = h - 1
+    while eat_h >= 0 and board[x][eat_h] in eat_list:
+        eat(x, eat_h)
+        eat_h -= 1
+    
+    fall(x)
+    
+    pieces[turn]['R'] -= 1
 
 def B(x):
     """
     Behaviour
     棋子数量：1个
-    可吃：C, Y, T
-    技能：分别向左、右吃子，直到碰到不能吃的
+    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
+    技能：分别向左、右连续吃子，直到碰到不能吃的，无视敌我
     """
     global board, turn
-    eat_list = ['C', 'Y', 'T']
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
     if pieces[turn]['B'] == 0:
         err('棋子耗尽。')
         return
@@ -199,12 +284,12 @@ def B(x):
     belong[x][h] = turn
 
     eat_x = x - 1
-    while eat_x >= 0 and board[eat_x][h] in eat_list and belong[eat_x][h] != turn:
+    while eat_x >= 0 and board[eat_x][h] in eat_list:
         eat(eat_x, h)
         eat_x -= 1
     
     eat_x = x + 1
-    while eat_x < 6 and board[eat_x][h] in eat_list and belong[eat_x][h] != turn:
+    while eat_x < 6 and board[eat_x][h] in eat_list:
         eat(eat_x, h)
         eat_x += 1
     
@@ -212,6 +297,35 @@ def B(x):
         fall(i)
     
     pieces[turn]['B'] -= 1
+
+def X(x):
+    """
+    Xin
+    棋子数量：1个
+    可吃：C(+) Y(+) H(+) B(+) Z(+)
+    技能：炸掉周围八个棋子中男性角色，无视敌我
+    """
+    global board, turn
+    eat_list = 'C C+ Y Y+ H H+ B B+ Z Z+'.split()
+    if pieces[turn]['X'] == 0:
+        err('棋子耗尽。')
+        return
+    
+    h = ht[x]
+    board[x][h] = 'X'
+    belong[x][h] = turn
+
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if i == 0 and j == 0:
+                continue
+            if 0 <= x + i < 6 and 0 <= h + j < 6 and board[x + i][h + j] in eat_list:
+                eat(x + i, h + j)
+    
+    for i in range(max(0, x - 1), min(5, x + 1)):
+        fall(i)
+    
+    pieces[turn]['X'] -= 1
     
 turn = YELLOW  # True=黄 False=蓝
 rd = 1 # round
