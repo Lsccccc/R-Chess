@@ -1,6 +1,8 @@
 from colorama import Fore
+import os
+os.system('')
 YELLOW = True
-BLUE = False
+GREEN = False
 
 board = [['O' for j in range(6)] for i in range(6)]
 # 列表第一维是列（从左往右），第二维是行（从下往上）
@@ -23,7 +25,7 @@ pieces = {
         'X': 1,
         'Z': 1
     }, 
-    BLUE: {
+    GREEN: {
         'C': '∞',
         'Y': 6,
         'T': 3,
@@ -41,7 +43,7 @@ def color_print(color, *values, **kwargs):
     color_codes = {
         'r': Fore.RED,
         'y': Fore.YELLOW,
-        'b': Fore.BLUE,
+        'g': Fore.GREEN,
         'w': Fore.WHITE
     }
     print(color_codes[color], end='')
@@ -57,8 +59,8 @@ def print_board():
                 color_print('w', board[j][i], end=' ' * (3 - len(board[j][i])))
             if belong[j][i] == YELLOW:
                 color_print('y', board[j][i], end=' ' * (3 - len(board[j][i])))
-            elif belong[j][i] == BLUE:
-                color_print('b', board[j][i], end=' ' * (3 - len(board[j][i])))
+            elif belong[j][i] == GREEN:
+                color_print('g', board[j][i], end=' ' * (3 - len(board[j][i])))
         print('|')
     print('----------------------')
 
@@ -67,9 +69,9 @@ def print_pieces():
     for i in pieces[YELLOW]:
         color_print('y', f'{pieces[YELLOW][i]}{i}', end=' ')
 
-    color_print('b', '\n蓝方：', end='')
-    for i in pieces[BLUE]:
-        color_print('b', f'{pieces[BLUE][i]}{i}', end=' ')
+    color_print('g', '\n绿方：', end='')
+    for i in pieces[GREEN]:
+        color_print('g', f'{pieces[GREEN][i]}{i}', end=' ')
     print()
 
 # error
@@ -354,7 +356,7 @@ def Z(x):
     pieces[turn]['Z'] -= 1
 
 
-turn = YELLOW  # True=黄 False=蓝
+turn = YELLOW  # True=黄 False=绿
 rd = 1 # round
 winner = None
 while True:
@@ -362,15 +364,15 @@ while True:
     winner = judge()
     if winner != None:
         color_print(
-            'y' if winner else 'b',
-            f'''#############\n# {"黄" if winner else "蓝"}方赢了！#\n#############
+            'y' if winner else 'g',
+            f'''#############\n# {"黄" if winner else "绿"}方赢了！#\n#############
             '''
         )
         break
     print_pieces()
     color_print(
-        'y' if turn else 'b',
-        f'第{rd}轮。轮到{"黄" if turn else "蓝"}方了。'
+        'y' if turn else 'g',
+        f'第{rd}轮。轮到{"黄" if turn else "绿"}方了。'
     )
 
     while True:
@@ -389,3 +391,4 @@ while True:
     
     turn = not turn
     rd += 1
+input('按任意键以退出...')
