@@ -1,3 +1,4 @@
+from colorama import Fore
 YELLOW = True
 BLUE = False
 
@@ -38,14 +39,14 @@ pieces = {
 # printing
 def color_print(color, *values, **kwargs):
     color_codes = {
-        'r': '31',
-        'y': '33',
-        'b': '34',
-        'w': '0'
+        'r': Fore.RED,
+        'y': Fore.YELLOW,
+        'b': Fore.BLUE,
+        'w': Fore.WHITE
     }
-    print(f'\033[{color_codes[color]}m', end='')
+    print(color_codes[color], end='')
     print(*values, **kwargs)
-    print('\033[0m', end='')
+    print(Fore.WHITE, end='')
 
 def print_board():
     print('----------------------')
