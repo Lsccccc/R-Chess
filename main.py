@@ -19,7 +19,8 @@ pieces = {
         'H': 2,
         'R': 1,
         'B': 1,
-        'X': 1
+        'X': 1,
+        'Z': 1
     }, 
     BLUE: {
         'C': '∞',
@@ -29,7 +30,8 @@ pieces = {
         'H': 2,
         'R': 1,
         'B': 1,
-        'X': 1
+        'X': 1,
+        'Z': 1
     }
 }
 
@@ -95,7 +97,8 @@ def put(p_name: str, x):
         "H": H,
         "R": R,
         "B": B,
-        "X": X
+        "X": X,
+        "Z": Z
     }
     func = map[p_name.upper()]
     func(x)
@@ -166,7 +169,7 @@ def C(x):
     可吃：H, B, X, Z
     技能：向下吃一个能吃的子，仅吃对方
     """
-    eat_down('C', x, 'H B X Z'.split())
+    eat_down('C' if rd != 2 else 'C+', x, 'H B X Z'.split())
 
 def Y(x):
     """
@@ -216,7 +219,7 @@ def H(x):
     Hao
     棋子数量：2个
     可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+)
-    技能：炸掉周围八个棋子中能吃的，无视敌我
+    技能：炸掉周围八个棋子中能吃的，包括本方棋子
     """
     global board, turn
     eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+'.split()
@@ -245,7 +248,7 @@ def R(x):
     Rui
     棋子数量：1个
     可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
-    技能：向下连续吃子，直到碰到不能吃的，无视敌我
+    技能：向下连续吃子，直到碰到不能吃的，包括本方棋子
     """
     global board, turn
     eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
@@ -271,7 +274,7 @@ def B(x):
     Behaviour
     棋子数量：1个
     可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
-    技能：分别向左、右连续吃子，直到碰到不能吃的，无视敌我
+    技能：分别向左、右连续吃子，直到碰到不能吃的，包括本方棋子
     """
     global board, turn
     eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
@@ -303,7 +306,7 @@ def X(x):
     Xin
     棋子数量：1个
     可吃：C(+) Y(+) H(+) B(+) Z(+)
-    技能：炸掉周围八个棋子中男性角色，无视敌我
+    技能：炸掉周围八个棋子中男性角色，包括本方棋子
     """
     global board, turn
     eat_list = 'C C+ Y Y+ H H+ B B+ Z Z+'.split()
@@ -326,7 +329,30 @@ def X(x):
         fall(i)
     
     pieces[turn]['X'] -= 1
-    
+
+def Z(x):
+    global board, turn
+    if pieces[turn]['H'] == 0:
+        err('棋子耗尽。')
+        return
+        
+    if ht[x] == 0:
+        board[x][0] = 'Z'
+        belong[x][0] = turn
+        ht[x] += 1
+    else:
+        board[x][ht[x]] = 'Z'
+        belong[x][ht[x]] = turn
+        if not board[x][ht[x] - 1].endswith('+'):
+            board[x][ht[x] - 1] += '+'
+        if board[x][ht[x] - 1] == 'T+':
+            p = input('请输入将T升级为什么（A或R）：').upper()
+            while p != 'A' and p != 'R':
+                p = input('输入错误。请输入将T升级为什么（A或R）：').upper()
+            board[x][ht[x] - 1] = p
+    pieces[turn]['Z'] -= 1
+
+
 turn = YELLOW  # True=黄 False=蓝
 rd = 1 # round
 winner = None
