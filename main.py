@@ -221,11 +221,11 @@ def H(x):
     """
     Hao
     棋子数量：2个
-    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+)
+    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
     技能：炸掉周围八个棋子中能吃的，包括本方棋子
     """
     global board, turn
-    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+'.split()
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
     if pieces[turn]['H'] == 0:
         err('棋子耗尽。')
         return
@@ -250,11 +250,11 @@ def R(x):
     """
     Rui
     棋子数量：1个
-    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+) A
+    可吃：C(+) Y(+) T H(+) B(+) X(+) Z(+)
     技能：向下连续吃子，直到碰到不能吃的，包括本方棋子
     """
     global board, turn
-    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+'.split()
     if pieces[turn]['R'] == 0:
         err('棋子耗尽。')
         return
@@ -391,4 +391,4 @@ while True:
     
     turn = not turn
     rd += 1
-input('按任意键以退出...')
+input('按回车以退出...')
