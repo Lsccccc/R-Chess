@@ -205,7 +205,7 @@ def T(x):
 
 def A(x):
     """
-    Tang
+    Amy
     棋子数量：2个
     可吃：R
     技能：向下吃一个子，仅吃R
@@ -334,6 +334,12 @@ def X(x):
     pieces[turn]['X'] -= 1
 
 def Z(x):
+    """
+    Zhang
+    棋子数量：1个
+    技能：升级下面的棋子
+    防御力升级，C升级为C+，以此类推，但T可升级为A或R
+    """
     global board, turn
     if pieces[turn]['H'] == 0:
         err('棋子耗尽。')
