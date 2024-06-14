@@ -338,7 +338,7 @@ def Z(x):
     防御力升级，C升级为C+，以此类推，但T可升级为A或R
     """
     global board, turn
-    if pieces[turn]['H'] == 0:
+    if pieces[turn]['Z'] == 0:
         err('棋子耗尽。')
         return
         
