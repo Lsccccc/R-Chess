@@ -105,6 +105,8 @@ def put(p_name: str, x):
     }
     func = map[p_name.upper()]
     func(x)
+    for i in range(6):
+        fall(i)
 
 def fall(x):
     """
@@ -163,8 +165,8 @@ def eat_down(p_name, x, eat_list):
         belong[x][ht[x]] = turn
         if board[x][ht[x] - 1] in eat_list and belong[x][ht[x] - 1] != turn:
             eat(x, ht[x] - 1)
-        fall(x)
 
+green_first_C = True
 def C(x):
     """
     Chenxi
@@ -172,7 +174,13 @@ def C(x):
     可吃：H, B, X, Z
     技能：向下吃一个能吃的子，仅吃对方
     """
-    eat_down('C' if rd != 2 else 'C+', x, 'H B X Z'.split())
+    global green_first_C
+    if turn == GREEN and green_first_C:
+        eat_down('C+', x, 'H B X Z'.split())
+        green_first_C = False
+    else:
+        eat_down('C', x, 'H B X Z'.split())
+    
 
 def Y(x):
     """
@@ -241,9 +249,6 @@ def H(x):
             if 0 <= x + i < 6 and 0 <= h + j < 6 and board[x + i][h + j] in eat_list:
                 eat(x + i, h + j)
     
-    for i in range(max(0, x - 1), min(5, x + 1)):
-        fall(i)
-    
     pieces[turn]['H'] -= 1
 
 def R(x):
@@ -268,8 +273,6 @@ def R(x):
         eat(x, eat_h)
         eat_h -= 1
     
-    fall(x)
-    
     pieces[turn]['R'] -= 1
 
 def B(x):
@@ -280,7 +283,7 @@ def B(x):
     技能：分别向左、右连续吃子，直到碰到不能吃的，包括本方棋子
     """
     global board, turn
-    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A'.split()
+    eat_list = 'C C+ Y Y+ T H H+ B B+ X X+ Z Z+ A O'.split()
     if pieces[turn]['B'] == 0:
         err('棋子耗尽。')
         return
@@ -298,9 +301,6 @@ def B(x):
     while eat_x < 6 and board[eat_x][h] in eat_list:
         eat(eat_x, h)
         eat_x += 1
-    
-    for i in range(6):
-        fall(i)
     
     pieces[turn]['B'] -= 1
 
@@ -327,9 +327,6 @@ def X(x):
                 continue
             if 0 <= x + i < 6 and 0 <= h + j < 6 and board[x + i][h + j] in eat_list:
                 eat(x + i, h + j)
-    
-    for i in range(max(0, x - 1), min(5, x + 1)):
-        fall(i)
     
     pieces[turn]['X'] -= 1
 
@@ -384,6 +381,8 @@ while True:
     while True:
         try:
             x = int(input('请输入要下的列：')) - 1
+            if not 0 <= x < 6:
+                err('输入错误。请重试。')
             p_name = input('请输入要下的子：').upper()
             put(p_name, x)
         except KeyError:
